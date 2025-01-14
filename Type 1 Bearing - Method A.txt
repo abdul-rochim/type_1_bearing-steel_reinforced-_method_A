@@ -1,0 +1,212 @@
+"TYPE 1 BEARING (STEEL REINFORCED) - Method 1
+"based on AASHTO LRFD 7th
+'copyright : Abdul Rochim
+'<hr>
+
+"Material and Section Properties
+'Bearing Dimensions:
+'Bearing Width - 'W = ? {25}in
+'Bearing Length - 'L = ? {12}in
+'Bearing Pad Layers:
+'Exterior Elastomeric Thickness - 'h_re = ? {0.125}in'(must be < 70% hri)
+'Interior Elastomeric Thickness - 'h_ri = ? {0.500}in
+'Steel Plate Thickness - 'hs = ? {0.125}in
+'No. of Steel Shim Plates - 'n_shims = ? {6}
+'No. of Interior Elastomer Layers - 'n = ? {5}
+'Total Elastomer Thickness - 'h_rt = n*h_ri + 2*h_re
+'Total Bearing Height - 't = h_rt + n_shims*hs
+
+'Bearing Material Properties:
+'Shore A Durometer Hardness - 'Duro = ? {50}'(min)
+'Shear Modulus
+'The least favorable value is assumed at each check since the material is spesified by ists hardness value (AASHTO 14.7.6.2)
+'The shear modulus of the elastomer is based on a temporary of 73° F.
+G_max = ? {0.130}ksi
+G_min = ? {0.095}ksi
+#if G_min > 0.08ksi ∧ G_max < 0.175ksi
+	'Check, 0.08 ksi < G < 0.175 ksi  [OK]
+#else if G_min < 0.08ksi
+	#if G_max > 0.175ksi
+		'Check, Gmin < 0.08 ksi and Gmax > 0.175 ksi [Not OK]
+	#else
+		'Check, Gmin < 0.08 ksi [Not OK]
+	#end if
+#else if G_max > 0.175ksi
+	'Check, Gmax > 0.175 ksi [Not OK]
+#end if
+
+'Steel Shim Properties
+'Yield Strength of Steel - 'Fy = ? {36.00}ksi
+'Allowable Fatigue Threshold - 'Δ_FTH = ? {24.00}ksi
+
+'<img style="height:180pt; width:300pt;" src="./Bearing Detail.jpg" alt="Bearing Detail.jpg">
+
+'<img style="height:300pt; width:450pt;" src="./Steel Reinf Bearing Detail.jpg" alt="Steel Reinf Bearing Detail.jpg">
+
+"Bearing Loads
+'Load acting on the bearing are dead and live load girder reactions at the service limit state. Per AASHTO 14.4.1, dynamic load allowance is excluded from the live load influence. Loads are per bearing.
+'Service I Limit State Loads:
+DL = ? {102.00}kip
+LL = ? {43.00}kip
+
+"Horizontal Movement
+' Shear deformations include movements from temperature, creep and shrinkage, prestressing effects, live loads, wind, braking, earthquake, and construction tolerances from service load combinations per AASHTO C14.4.1.
+'Uniform Temperature Movement Range:
+'Maximum temperature - 'T_max = ? {100.00}°F
+'Minimum temperature - 'T_min = ? {-20.00}°F
+'Coeff. of thermal expansion - 'α = ? {0.000006}in/in/°F
+'Expansion length - 'L_exp = ? {900}in
+'Service I Load Factor, TU - 'γ_TU = ? {1.20}
+'AASHTO Reduction Factor, 'α_AASHTO = ? {1.00}
+Δ_T = α*L_exp*(T_max - T_min)
+
+'Creep, Shringkage, Elastic Shortening, Live Load, and Miscellaneous Movement:
+'Creep movement - 'Δ_CR = ? {0.21}in
+'Shringkage movement - 'Δ_SH = ? {0.07}in
+'Elastic shortening - 'Δ_EL = ? {0.00}in
+'Live load movement - 'Δ_LL = ? {0.01}in
+'Miscellaneous movement - 'Δ_MISC = ? {0.0000}in
+'Δo = Maximum horizontal displacement of the superstructure
+'Δs = Maximum shear deformation of the bearing modified to account for substructure stiffness
+'Assumming the substructure is stiff enough to prevent movement: (AASHTO 14.7.5.3.2 & BDM 14.5.
+'Δo = Δs = Σ( α*γ_TU*Δ_T + Δ_CR + Δ_SH + Δ_EL + Δ_LL + Δ_MISC )
+Δo = α_AASHTO*γ_TU*Δ_T + Δ_CR + Δ_SH + Δ_EL + Δ_LL + Δ_MISC
+Δs = Δo
+
+"SOLUTION
+'Shape factor
+'Rectangular, steel reinforced bearing shape factor without holses: (AASHTO 14.7.5.3.2 & BDM 14.5.3)
+S_i = (L*W)/(2*h_ri*(L + W))
+
+'Confirm Method A is applicable for the design of the reinforced bearing pad per AASHTO 14.7.6.1
+#if (S_i^2/n) < 22
+	'Check, 'S_i^2/n' < '22' [OK]'
+#else 
+	'Check, 'S_i^2/n' > '22' [Not OK]'
+#end if
+
+'Compressive stress
+'The compressive stress of the bearing shall satisfy the criteria below for a steel reinforced elastomeric bearing pad. Since shear deformation is not prevented, a 10% increase in stress limits is not permitted (AASHTO 14.7.6.3.2)
+'σs = average compressive stress due to total load from applicable service load combinations
+σ_s = (DL + LL)/(L*W)
+#if σ_s ≤ 1.25*G_min*S_i
+	'Check, 'σ_s'<='1.25*G_min*S_i' [OK]'
+#else
+	'Check, 'σ_s'>'1.25*G_min*S_i' [Not OK]'
+#end if
+#if σ_s ≤ 1.25ksi
+	'Check, σs <= 1.25ksi [OK]'
+#else
+	'Check, σs > 1.25ksi [Not OK]'
+#end if
+
+'Compressive deflection
+'Compressive deflection under instantaneous live load and initial dead load shall meet the following criteria on AASHTO 14.7.6.3.3 (Method A) and 14.7.5.3.6 (Method B). Note the design aids presented in Figure C14.7.6.3.3-1 are used in determining the compressive strain. For cases where the steel reinforced bearing pad material is specified by its shear modulus, equation C14.7.5.3.6-1 is used in lieu of these graphs to determine the strain in the bearing pad under applicable stresses. Refer to Example 3 accordingly.
+
+'Live load compressive deflection
+'Minimizing deflection from instantaneous live loads is recommended when bridge joints are present. For jointless bridges, these criteria may omitted. Method A requirements per 14.7.6.3.3 refer to Method B deflection checks per 14.7.5.3.6.
+'δL <= 0.125"
+'δL = Σ(εLi hri) =  εL hrt (compressive deflection due to live load)
+'εLi = instantaneous live load compressive strain in elastomeric pad determined from Figure C14.7.6.3.3-1
+'σL = average compressive stress due to live load at the service limit state
+σ_L = LL/(L*W)
+
+'<img style="height:250pt; width:350pt;" src="./AASHTO Figure C14.7.6.3.3-1.jpg" alt="AASHTO Figure C14.7.6.3.3-1.jpg">
+
+ε_Li = ? {0.005}'(Figure 3 AASHTO C14.7.6.3.3-1)
+δ_L = ε_Li*h_rt
+#if δ_L ≤ 0.125in
+	'Check, 'δ_L'≤ 0.125in  [OK]'
+#else
+	'Check, 'δ_L'> 0.125in  [Not OK]'
+#end if
+
+'Dead load compressive deflection
+'AASHTO does not have limitations on initial or long term dead load deflections. The following calculation is for demonstration only. Engineering judgement shall be used in evaluating appropriate deflections in the bearing. Method A requirements per 14.7.6.3.3 refer to Method B deflection checks per 14.7.5.3.6.
+'initial dead load deflection:
+'δd = Σ(εdi hri)
+'εdi = initial dead load compressive strain in elastomeric pad determined from Figure C14.7.6.3.3-1
+'σd = average compressive stress due to dead load at the service limit state
+σ_d = DL/(L*W)
+ε_di = ? {0.0175}'(Figure 3 AASHTO C14.7.6.3.3-1)
+δ_d = ε_di*h_rt
+
+'Long term dead load deflection:
+α_cr = ? {0.25}'(AASHTO T14.7.6.2-1)
+δ_lt = δ_d + α_cr*δ_d'(AASHTO 14.7.5.3.6-3)
+
+'Combined live load and dead load compressive deflection
+'δs = Σ( εsi . hri) -> compressive deflection due to live load and dead load AASHTO 14.7.5.3.6-1
+'εsi = instantaneous live and dead load compressive strain in elastomeric pad determined from Figure C14.7.6.3.3-1
+'σs = average compressive stress due to total load from applicable service load combinations
+σ_s = (DL + LL)/(L*W)
+ε_si = ? {0.026}'(Figure 3 AASHTO C14.7.6.3.3-1)
+δ_s = ε_si*h_ri
+#if δ_s ≤ 0.09*h_ri
+	'Check: 'δ_s'≤'0.09*h_ri' [OK]'
+#else
+	'Check: 'δ_s'>'0.09*h_ri' [Not OK]'
+#end if
+
+'Shear deformation
+'Total elastomer thickness = hrt
+#if h_rt ≥ 2*Δs
+	'Check,'h_rt'≥'2*Δs'[OK]
+#else
+	'Check,'h_rt'<'2*Δs'[Not OK]
+#end if
+
+'Stability
+'Total bearing thickness, t, shall not exceed the lesser of the following dimensions:
+'L/3 and W/3
+#if t ≤ min(L/3; W/3)
+	'Check, 't'<='min(L/3; W/3)'[OK]
+#else
+	'Check, 't'>'min(L/3; W/3)'[Not OK]
+#end if
+
+'Reinforcement
+'Note that holes are not present in the bearing. The allowable thickness does not need to be increased per AASHTO 14.7.5.3.5
+'The minimum thickness of steel reinforcement shall satisfy the following:
+'hs >= 0.0625 in
+'and
+'(service limit state)
+'hs >= 3 hri σs/ Fy
+'and
+'(fatique limit state)
+'hs >= 2 hri σL/ ΔFTH
+hs
+#if hs ≥ 0.0625in
+	'Check, 'hs'>= 0.0625 in [OK]
+#else
+	'Check, 'hs'< 0.0625 in [Not OK]
+#end if
+#if hs ≥ 3*h_ri*σ_s/Fy
+	'Check, 'hs'>='3*h_ri*σ_s/Fy|in'[OK]
+#else
+	'Check, 'hs'<'3*h_ri*σ_s/Fy|in'[Not OK]
+#end if
+#if hs ≥ 2*h_ri*σ_L/Δ_FTH
+	'Check, 'hs'>='2*h_ri*σ_L/Δ_FTH|in'[OK]
+#else
+	'Check, 'hs'<'2*h_ri*σ_L/Δ_FTH|in'[Not OK]
+#end if
+
+'Anchorage (Bearing Pad Slip)
+'The bearing pad must be secured against horizontal movement if the shear force sustained by the deformed pad exceeds the minimum vertical force due to permanent loads modified for the concrete friction. Gmax is used since the pad is stiffer at colder temperatures and will produce larger shear forces. Note the following example considers longitudinal deformations only; wind, breaking, and seismic loads shall also be considered as appropriate, in the direction of consideration.
+μ = ? {0.20}'(Coefficient of friction AASHTO C14.8.3.1)
+P_min = DL
+A = L*W
+h_rt
+Δ_s,allow = μ*P_min*h_rt/(G_max*A)|in
+#if Δ_s,allow ≥ Δs
+	'Check, 'Δ_s,allow'>='Δs'[OK]
+#else
+	'Check, 'Δ_s,allow'<'Δs'[Not OK]
+#end if
+
+' In cases where Δs exceeds  Δs,allow, anchor bolts shall be sized and designed in accordance with those Articles specified in AASHTO 14.8.3
+
+'Geometry
+'The minimum unreinforced bearing pad thickness of 2in. is assumed sufficient to prevent girder - to - support contact under the applied girder rotations and ompressive deflections. Under extreme skews, large girder loads or rotations, and/or steep profile grades, the Designer shall confirm the bearing thickness. Refer to Example 1 - Elastomeric Leveling Pad.
+
